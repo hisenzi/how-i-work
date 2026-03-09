@@ -1,65 +1,96 @@
-# System Architecture
+# HiSenzi 系統架構
 
-> AI Agent workspace 的完整架構。
-> 這是從我的實際工作環境摘取的結構說明。
+> 最後更新：2026-03-08（開案流程改造：內部/產品分類，ai2line + marketing-agent-pack 回補）
+> Source of truth：`workspace/ARCHITECTURE.md` → 每日同步到 Obsidian `HiSenzi/系統架構.md`
 
 ---
 
-## Workspace 結構
+## workspace/（HiSenzi 工作區）
 
 | 檔案/資料夾 | 功用 |
 |------------|------|
-| `AGENTS.md` | Agent 行為準則（每次 session 都讀） |
-| `SOUL.md` | Agent 人格定義 |
-| `USER.md` | 使用者資訊（私有） |
+| `AGENTS.md` | 行為準則（每次都讀） |
+| `SOUL.md` | HiSenzi 人格定義 |
+| `USER.md` | Vincent 資訊 |
+| `IDENTITY.md` | HiSenzi 身份（名字、Email） |
 | `CORE.md` | 核心認知 L0（紅線、偏好，≤80行） |
 | `MEMORY.md` | 長期記憶 L1（活躍專案，≤150行） |
-| `HEARTBEAT.md` | 定期心跳檢查清單 |
-| `TOOLS.md` | 工具設定筆記 |
+| `HEARTBEAT.md` | 心跳檢查清單 |
+| `TOOLS.md` | 工具設定筆記（日曆、Obsidian、專案管理指令） |
+| `ARCHITECTURE.md` | 本檔案，系統架構速查 |
 | `memory/` | 每日工作記憶（YYYY-MM-DD.md） |
 | `scripts/` | 所有自動化腳本 |
-| `skills/` | 自製 Agent Skills |
-| `secrets/` | API Keys（.gitignore 保護） |
+| `skills/` | 所有 Skills + dist/ 歸檔 |
+| `secrets/` | API Keys（.gitignore 保護，勿動） |
+| `logs/` | backup.log 等執行紀錄 |
+| `config/` | 系統設定（repos.json 等） |
 | `milestones/projects/` | 專案定義（project.json + tasks.json） |
 
-## 記憶系統（雙軌）
+## HiSenzi/（Agent 產出區）
+
+| 檔案/資料夾 | 功用 |
+|------------|------|
+| `dashboard.html` | 儀表板（每日 09:01 自動更新） |
+| `backup-status.json` | 最近一次備份狀態 |
+| `work-logs.json` | janitor 工作日誌 |
+| `token-usage.json` | Token 用量統計 |
+| `reviews/` | 月復盤報告（YYYY-MM-review.md） |
+
+## cron/（排程系統）
+
+| 檔案 | 功用 |
+|------|------|
+| `jobs.json` | 所有排程定義（schedule-cron Skill 管理） |
+| `runs/` | 各 job 執行紀錄（自動產生） |
+
+---
+
+## Repo 清單
+
+| Repo | 用途 | 管理方式 |
+|------|------|---------|
+| hisenzi/hisenzi-backup | 本地備份 + 里程碑 | backup.sh 22:05 自動 push |
+| hisenzi/nsg-system | NSG 學習系統（產品，Zeabur） | check-repos.py 22:10 通知 |
+| hisenzi/ai2line | ai2line 智慧業務預約系統（產品，Zeabur） | check-repos.py 22:10 通知 |
+| hisenzi/openclaw-marketing-agent-pack | 行銷人的 AI Agent（產品，Zeabur） | check-repos.py 22:10 通知 |
+| hisenzi/how-i-work | 公開 Digital Garden（內部，public） | 手動更新，不進 repos.json |
+
+> backup-repo 由 backup.sh 獨立管理，不在 `config/repos.json` 中。
+> repos.json 只管需要額外監控的 repo。
+
+## 資料流
 
 ```
-L0: CORE.md        ← 核心規則，≤80行，僅手動修改
-L1: MEMORY.md      ← 活躍工作區，≤150行，janitor 自動維護
-L2: archive/       ← 歸檔（過期 P2 項目、月度洞察）
-    memory/        ← 每日筆記（原始紀錄）
+22:00 janitor        → 記憶清理 + README 里程碑
+22:05 backup.sh      → push backup-repo + sync Obsidian
+22:10 check-repos.py → 檢查 repos.json 裡的 repo
+      → /tmp/hisenzi-repo-status.json → heartbeat 回報
 ```
 
-Agent 每次啟動：讀 CORE.md → 讀 MEMORY.md → 讀最近 2 天的 memory/。
-memory-janitor.py 每天 22:00 自動清理過期項目、驗證行數上限。
+## Repo 規則
 
-## 備份系統（三層）
+- `deploy_target` 有值 → `auto_push: false`（只通知，不自動推）
+- `deploy_target` 為 null → 可設 `auto_push: true`
+- 新增 repo → 更新 `config/repos.json` + 本檔案
+- backup-repo 不放 repos.json（backup.sh 已管理）
 
-```
-Layer 1: Git         ← workspace repo，每日 22:05 自動 push（私有）
-Layer 2: Vault       ← secrets + SSH + 設定檔 → AES-256 加密 → iCloud
-Layer 3: Cron        ← 排程 jobs.json 快照，跟著 Git 走
-```
+## 可清理
 
-詳見 [BACKUP-RESTORE.md](BACKUP-RESTORE.md)。
+| 資料夾 | 說明 |
+|--------|------|
+| `HiHiSenzi_backup/` | 2/16 舊快照，已有 GitHub 備份，可刪 |
+| `edu-system_closed/` | 會考系統早期原型，已歸檔（部署骨架已移入 nsg-system） |
 
-## 每日自動化流程
+## README.md 里程碑規則
 
-```
-21:55  auto-daily-log.py    → 產生當日記憶骨架
-22:00  memory-janitor.py    → 記憶清理 + README 里程碑更新
-22:05  backup.sh            → git commit + push + sync Obsidian
-22:10  check-repos.py       → 檢查外部 repo 狀態 → heartbeat 回報
-22:30  heptabase-to-obsidian → 知識庫同步
-09:00  每日摘要              → Agent 整理昨日重點
-09:01  generate-dashboard    → 儀表板 HTML 更新
-```
+- 每個獨立 repo：README.md 只顯示**自己的**專案里程碑
+- hisenzi-backup：README.md 顯示**全部**專案里程碑（總覽）
+- janitor 22:00 自動更新所有 repo 的 README.md
+- 條件：repos.json 有登記 + README.md 有 `MILESTONES_START/END` 標記
+- 開案時 `new-project.py --repo-path` 自動建含標記的 README.md
 
-## 設計原則
+## 何時讀這個檔案
 
-1. **一個資料夾 = 一個專案** — 不在 repo 之間複製檔案
-2. **Single source of truth** — 每份資料只有一個權威來源
-3. **先跑通，再自動化** — 手動驗證 OK 才寫成腳本 / cron
-4. **文件即記憶** — Agent 不靠「心裡記住」，寫下來才算數
-5. **安全分層** — 敏感資料永遠不進 git，用 vault 加密異地備份
+- 涉及 repo / 部署 / 架構 / Zeabur 時
+- 開案時（project-init skill 會引導）
+- 不需每次 session 啟動都讀
