@@ -87,9 +87,11 @@
 - Repo 狀態通知（/tmp/hisenzi-repo-status.json）
 - Vault 備份提醒（敏感檔案更新 vs 上次備份時間）
 - how-i-work 同步提醒（/tmp/hisenzi-how-i-work-sync.txt）
+- Cadence 到期檢查（兩軌分流 ops task 的 last_done）
 - 腳本完成通知（/tmp/hisenzi-annotate-result.json）
 
 > 排程設定：`~/.openclaw/cron/jobs.json`（schedule-cron Skill 管理）
+> 完整排程表：Obsidian `HiSenzi/維護規則.md`（自動產生，以此為準）
 
 ---
 
@@ -118,6 +120,7 @@
 | `logs/` | backup.log 等執行紀錄 |
 | `config/` | 系統設定（repos.json 等） |
 | `milestones/projects/` | 專案定義（project.json + tasks.json） |
+| `clients/` | 客戶資料（訓練套件、內部備註） |
 
 ### HiSenzi/（Agent 產出區）
 
