@@ -14,8 +14,7 @@ UI/UX 設計背景，做的是系統建構 — 不只是介面，而是整個服
 
 | 目錄 | 內容 |
 |---|---|
-| **[system/](system/)** | AI Agent 的設計 — 人設、工作規範、系統架構 |
-| **[scripts/](scripts/)** | 自動化腳本 — 備份、記憶維護、每日日誌 |
+| **[system/](system/)** | AI Agent 的設計 — 系統架構、協作規範 |
 | **[skills/](skills/)** | 自製的 Agent 技能（OpenClaw Skills） |
 | **[stories/](stories/)** | 真實案例，紀錄從問題到解法的思考過程 |
 | **[decisions/](decisions/)** | 架構決策紀錄（ADR）— 為什麼這樣做 |
@@ -38,12 +37,15 @@ Learn in Public。
 
 以下在我的工作環境中存在但不公開：
 
-- `memory/` — 每日工作筆記
-- `MEMORY.md` — 活躍工作區
+- `SOUL.md` — Agent 人格設定
+- `CORE.md` — 核心規則與紅線
 - `USER.md` — 使用者詳細資訊
+- `MEMORY.md` — 活躍工作區
+- `memory/` — 每日工作筆記
 - `IDENTITY.md` — Agent 身份設定
-- `.env.local` — 環境變數
+- `scripts/` — 自動化腳本（含敏感路徑）
 - `secrets/` — API keys、tokens
+- `.env.local` — 環境變數
 
 ## License
 
