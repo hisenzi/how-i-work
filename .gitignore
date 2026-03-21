@@ -3,3 +3,12 @@
 *.log
 *.tmp
 __pycache__/
+SOUL.md
+USER.md
+CORE.md
+scripts/memory-janitor.py
+scripts/auto-daily-log.py
+system/BACKUP-RESTORE.md
+scripts/backup.sh
+scripts/vault-backup.sh
+scripts/vault-restore.sh
